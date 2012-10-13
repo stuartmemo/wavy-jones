@@ -1,18 +1,17 @@
 var WavyJones = function (context, elem) {
 	var analyser = context.createAnalyser();
+
 	analyser.width = document.getElementById(elem).offsetWidth;
 	analyser.height = document.getElementById(elem).offsetHeight;
 	analyser.lineColor = 'yellow';
-	analyser.lineThickness = 1;
+	analyser.lineThickness = 5;
 
-    var paper = Raphael('scope', analyser.width, analyser.height),
+    var paper = Raphael(elem, analyser.width, analyser.height),
         oscLine = paper.path([['M', 0, analyser.height/2], ['L', analyser.width, analyser.height/2], 'Z']),
         noDataPoints = 10,
 		freqData = new Uint8Array(analyser.frequencyBinCount);
 
     oscLine.attr({stroke: analyser.lineColor, 'stroke-width': analyser.lineThickness});
-
-    var firstGo = true;
 
     var drawLine = function () {
         analyser.getByteTimeDomainData(freqData);
@@ -33,19 +32,14 @@ var WavyJones = function (context, elem) {
             graphStr += graphPoints[i];
         }
 
-        if (firstGo) {
-            console.log(graphStr)
-            firstGo = false;
-        }
-
         oscLine.attr('stroke', analyser.lineColor);
         oscLine.attr('stroke-width', analyser.lineThickness);
         oscLine.attr('path', graphStr);
 
         setTimeout(drawLine, 100);
-    }
+    };
 
     drawLine();
 
-	return analyser;
+    return analyser;
 };
