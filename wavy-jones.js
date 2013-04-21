@@ -1,45 +1,57 @@
 var WavyJones = function (context, elem) {
-	var analyser = context.createAnalyser();
+  var analyser = context.createAnalyser();
+  var elem = document.getElementById(elem);
+  
+  analyser.width = elem.offsetWidth;
+  analyser.height = elem.offsetHeight;
+  analyser.lineColor = 'yellow';
+  analyser.lineThickness = 5;
 
-	analyser.width = document.getElementById(elem).offsetWidth;
-	analyser.height = document.getElementById(elem).offsetHeight;
-	analyser.lineColor = 'yellow';
-	analyser.lineThickness = 5;
+  var svgNamespace = "http://www.w3.org/2000/svg";
+  var paper = document.createElementNS(svgNamespace, "svg");
+  paper.setAttribute('width', analyser.width);
+  paper.setAttribute('height', analyser.height);
+  paper.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
+  elem.appendChild(paper); 
 
-    var paper = Raphael(elem, analyser.width, analyser.height),
-        oscLine = paper.path([['M', 0, analyser.height/2], ['L', analyser.width, analyser.height/2], 'Z']),
-        noDataPoints = 10,
-		freqData = new Uint8Array(analyser.frequencyBinCount);
+  var oscLine = document.createElementNS(svgNamespace, "path");
+  oscLine.setAttribute("stroke", analyser.lineColor);
+  oscLine.setAttribute("stroke-width", analyser.lineThickness);
+  oscLine.setAttribute("fill","none");
+  paper.appendChild(oscLine);
 
-    oscLine.attr({stroke: analyser.lineColor, 'stroke-width': analyser.lineThickness});
+  var noDataPoints = 10,
+    freqData = new Uint8Array(analyser.frequencyBinCount);
 
-    var drawLine = function () {
-        analyser.getByteTimeDomainData(freqData);
 
-        var graphPoints = [],
-            graphStr = '';
+  var drawLine = function () {
+    analyser.getByteTimeDomainData(freqData);
 
-        graphPoints.push('M0, ' + (analyser.height/2));
+    var graphPoints = [],
+      graphStr = '';
 
-        for (var i = 0; i < freqData.length; i++) {
-            if (i % noDataPoints) {
-                var point = (freqData[i] / 128) * (analyser.height / 2);
-                graphPoints.push('L' + i + ', ' + point); 
-            }
-        }
+    graphPoints.push('M0, ' + (analyser.height/2));
 
-        for (i = 0; i < graphPoints.length; i++) {
-            graphStr += graphPoints[i];
-        }
+    for (var i = 0; i < freqData.length; i++) {
+      if (i % noDataPoints) {
+        var point = (freqData[i] / 128) * (analyser.height / 2);
+        graphPoints.push('L' + i + ', ' + point); 
+      }
+    }
 
-        oscLine.attr('stroke', analyser.lineColor);
-        oscLine.attr('stroke-width', analyser.lineThickness);
-        oscLine.attr('path', graphStr);
+    for (i = 0; i < graphPoints.length; i++) {
+      graphStr += graphPoints[i];
+    }
 
-        setTimeout(drawLine, 100);
-    };
+    oscLine.setAttribute("stroke", analyser.lineColor);
+    oscLine.setAttribute("stroke-width", analyser.lineThickness);
 
-    drawLine();
+    oscLine.setAttribute("d", graphStr);
 
-    return analyser;
+    setTimeout(drawLine, 100);
+  };
+
+  drawLine();
+
+  return analyser;
 };
