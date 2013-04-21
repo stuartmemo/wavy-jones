@@ -1,17 +1,28 @@
 var WavyJones = function (context, elem) {
 	var analyser = context.createAnalyser();
-
-	analyser.width = document.getElementById(elem).offsetWidth;
-	analyser.height = document.getElementById(elem).offsetHeight;
+    var elem = document.getElementById(elem);
+    
+	analyser.width = elem.offsetWidth;
+	analyser.height = elem.offsetHeight;
 	analyser.lineColor = 'yellow';
 	analyser.lineThickness = 5;
 
-    var paper = Raphael(elem, analyser.width, analyser.height),
-        oscLine = paper.path([['M', 0, analyser.height/2], ['L', analyser.width, analyser.height/2], 'Z']),
-        noDataPoints = 10,
-		freqData = new Uint8Array(analyser.frequencyBinCount);
+    var svgNamespace = "http://www.w3.org/2000/svg";
+    var paper = document.createElementNS(svgNamespace, "svg");
+    paper.setAttribute('width', analyser.width);
+    paper.setAttribute('height', analyser.height);
+    paper.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
+    elem.appendChild(paper); 
 
-    oscLine.attr({stroke: analyser.lineColor, 'stroke-width': analyser.lineThickness});
+    var oscLine = document.createElementNS(svgNamespace, "path");
+    oscLine.setAttribute("stroke", analyser.lineColor);
+    oscLine.setAttribute("stroke-width", analyser.lineThickness);
+    oscLine.setAttribute("fill","none");
+    paper.appendChild(oscLine);
+
+    noDataPoints = 10,
+	freqData = new Uint8Array(analyser.frequencyBinCount);
+
 
     var drawLine = function () {
         analyser.getByteTimeDomainData(freqData);
@@ -32,9 +43,10 @@ var WavyJones = function (context, elem) {
             graphStr += graphPoints[i];
         }
 
-        oscLine.attr('stroke', analyser.lineColor);
-        oscLine.attr('stroke-width', analyser.lineThickness);
-        oscLine.attr('path', graphStr);
+        oscLine.setAttribute("stroke", analyser.lineColor);
+        oscLine.setAttribute("stroke-width", analyser.lineThickness);
+
+        oscLine.setAttribute("d", graphStr);
 
         setTimeout(drawLine, 100);
     };
